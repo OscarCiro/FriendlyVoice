@@ -1,3 +1,4 @@
+// src/app/profile/page.tsx
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
@@ -9,10 +10,17 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function ProfilePage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -23,12 +31,12 @@ export default function ProfilePage() {
   }
 
   if (!user) {
-    // This should ideally be handled by a protected route mechanism
-    // For now, redirect if not logged in.
-    if (typeof window !== 'undefined') {
-      router.push('/login');
-    }
-    return null; 
+    // User will be redirected by useEffect, return null or a loading state
+    return (
+      <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
   }
 
   // Mock data for demonstration
@@ -48,7 +56,7 @@ export default function ProfilePage() {
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-background shadow-lg">
                 <Image 
                   src={user.avatarUrl} 
-                  alt={user.name} 
+                  alt={user.name || 'User Avatar'} 
                   width={128} 
                   height={128} 
                   className="object-cover"
