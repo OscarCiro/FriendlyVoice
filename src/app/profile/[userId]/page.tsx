@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { VozCard } from '@/components/voz-card';
 import { initialMockVoces } from '@/lib/mock-data'; // Using shared mock voces
-import { Loader2, UserPlus, UserMinus, Mic, MessageSquare, Headphones, ArrowLeft } from 'lucide-react';
+import { Loader2, UserPlus, UserMinus, Mic, MessageSquareText, Headphones, ArrowLeft } from 'lucide-react'; // Changed MessageSquare to MessageSquareText
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -30,33 +30,26 @@ export default function UserProfilePage() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
   useEffect(() => {
-    if (authLoading) return; // Wait for auth to load
+    if (authLoading) return; 
 
     if (!userId) {
       setIsLoadingProfile(false);
-      // Optionally redirect to a 404 page or home
-      // router.push('/'); 
       return;
     }
 
-    // If viewing own profile via this dynamic route, redirect to /profile
     if (currentUser && currentUser.id === userId) {
       router.replace('/profile');
       return;
     }
     
-    // Simulate fetching profile user data
     const fetchedUser = getUserById(userId);
     if (fetchedUser) {
       setProfileUser(fetchedUser);
-      // Filter mockVoces for this user
       const voces = initialMockVoces.filter(v => v.userId === userId)
                                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setUserVoces(voces);
     } else {
-      // Handle user not found, e.g., redirect to 404 or show message
       toast({ title: 'Perfil no encontrado', description: 'El usuario que buscas no existe.', variant: 'destructive' });
-      // router.push('/discover'); // Or a 404 page
     }
     setIsLoadingProfile(false);
   }, [userId, authLoading, currentUser, router, getUserById, toast]);
@@ -72,7 +65,6 @@ export default function UserProfilePage() {
         await followUser(profileUser.id);
         toast({ title: 'Ahora sigues a', description: `Empezaste a seguir a ${profileUser.name}.` });
       }
-      // Re-fetch or update profileUser to reflect follower count change - for now, auth context handles this
       const updatedProfileUser = getUserById(profileUser.id);
       if (updatedProfileUser) setProfileUser(updatedProfileUser);
 
@@ -81,7 +73,6 @@ export default function UserProfilePage() {
     }
   };
 
-  // Dummy handlers for VozCard interactions on this page
   const handleLikeOnProfile = (vozId: string) => {
     setUserVoces(prevVoces =>
       prevVoces.map(v =>
@@ -121,7 +112,7 @@ export default function UserProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
-       <Button variant="outline" onClick={() => router.back()} className="mb-4">
+       <Button variant="outline" onClick={() => router.back()} className="mb-4 self-start">
         <ArrowLeft className="mr-2 h-4 w-4" /> Volver
       </Button>
       <Card className="shadow-xl overflow-hidden">
@@ -149,12 +140,24 @@ export default function UserProfilePage() {
           </div>
 
           {!isOwnProfile && currentUser && (
-            <Button onClick={handleFollowToggle} className="w-full">
-              {isFollowing(profileUser.id) ? <UserMinus className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />}
-              {isFollowing(profileUser.id) ? 'Dejar de Seguir' : 'Seguir'}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button onClick={handleFollowToggle} className="flex-1">
+                {isFollowing(profileUser.id) ? <UserMinus className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />}
+                {isFollowing(profileUser.id) ? 'Dejar de Seguir' : 'Seguir'}
+              </Button>
+              <Button variant="outline" className="flex-1" asChild>
+                <Link href={`/messages/${profileUser.id}`}>
+                  <MessageSquareText className="mr-2 h-4 w-4" /> Enviar Mensaje de Voz
+                </Link>
+              </Button>
+            </div>
           )}
-          {!currentUser && <p className="text-center text-sm text-muted-foreground"> <Link href="/login" className="underline text-primary">Inicia sesión</Link> para seguir a este usuario.</p>}
+          {!currentUser && (
+            <p className="text-center text-sm text-muted-foreground"> 
+              <Link href="/login" className="underline text-primary">Inicia sesión</Link> para interactuar con este perfil.
+            </p>
+          )}
+
 
           <Separator />
 
@@ -193,7 +196,7 @@ export default function UserProfilePage() {
             {userVoces.length > 0 ? (
               <div className="space-y-4">
                 {userVoces.map(voz => (
-                  <VozCard key={voz.id} voz={voz} onLikeToggle={handleLikeOnProfile} onComment={handleCommentOnProfile} />
+                  <VozCard key={voz.id} voz={voz} onLikeToggle={handleLikeOnProfile} onOpenComments={handleCommentOnProfile} />
                 ))}
               </div>
             ) : (

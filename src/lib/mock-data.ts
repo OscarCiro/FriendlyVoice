@@ -1,4 +1,4 @@
-import type { User, Voz, VozComment } from '@/types/friendly-voice';
+import type { User, Voz, VozComment, Message, Chat } from '@/types/friendly-voice';
 
 export const mockUsers: User[] = [
   {
@@ -10,7 +10,7 @@ export const mockUsers: User[] = [
     interests: ['Tecnología', 'Podcasts', 'Música Indie'],
     personalityTags: ['Curiosa', 'Amigable'],
     followers: ['userCarlosL', 'userLauraG'],
-    following: ['userCarlosL'],
+    following: ['userCarlosL', 'userLauraG'], // Ana sigue a Carlos y Laura
     voiceSamples: [],
   },
   {
@@ -21,8 +21,8 @@ export const mockUsers: User[] = [
     bio: 'Desarrollador de software y aficionado a la ciencia ficción. Me gusta compartir mis pensamientos sobre el futuro.',
     interests: ['Desarrollo de Software', 'Ciencia Ficción', 'Videojuegos'],
     personalityTags: ['Analítico', 'Creativo'],
-    followers: ['userAnaP'],
-    following: ['userAnaP', 'userLauraG'],
+    followers: ['userAnaP', 'userLauraG'], // Carlos es seguido por Ana y Laura
+    following: ['userAnaP', 'userLauraG'], // Carlos sigue a Ana y Laura
     voiceSamples: [],
   },
   {
@@ -33,8 +33,8 @@ export const mockUsers: User[] = [
     bio: 'Música y viajera. Comparto fragmentos de mi vida y mis melodías.',
     interests: ['Música', 'Viajes', 'Fotografía'],
     personalityTags: ['Aventurera', 'Artística'],
-    followers: ['userCarlosL'],
-    following: ['userCarlosL'],
+    followers: ['userAnaP', 'userCarlosL'], // Laura es seguida por Ana y Carlos
+    following: ['userAnaP', 'userCarlosL'], // Laura sigue a Ana y Carlos
     voiceSamples: [],
   },
    {
@@ -45,8 +45,8 @@ export const mockUsers: User[] = [
     bio: 'Explorando FriendlyVoice.',
     interests: ['Nuevas Experiencias'],
     personalityTags: ['Explorador'],
-    followers: [],
-    following: [],
+    followers: ['userAnaP'],
+    following: ['userCarlosL'],
     voiceSamples: [],
   }
 ];
@@ -124,5 +124,69 @@ export const initialMockVoces: Voz[] = [
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     isLiked: false,
     comments: [],
+  },
+];
+
+
+// Mock data for Direct Messages and Chats
+const generateChatId = (userId1: string, userId2: string): string => {
+  return [userId1, userId2].sort().join('_');
+};
+
+export const mockDirectMessages: Message[] = [
+  {
+    id: 'dm1',
+    chatId: generateChatId('userAnaP', 'userCarlosL'),
+    senderId: 'userAnaP',
+    recipientId: 'userCarlosL',
+    voiceUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', // Placeholder audio
+    createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(), // 2 hours ago
+  },
+  {
+    id: 'dm2',
+    chatId: generateChatId('userAnaP', 'userCarlosL'),
+    senderId: 'userCarlosL',
+    recipientId: 'userAnaP',
+    voiceUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
+    createdAt: new Date(Date.now() - 1000 * 60 * 90).toISOString(), // 1.5 hours ago
+  },
+  {
+    id: 'dm3',
+    chatId: generateChatId('userAnaP', 'userCarlosL'),
+    senderId: 'userAnaP',
+    recipientId: 'userCarlosL',
+    voiceUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
+  },
+  {
+    id: 'dm4',
+    chatId: generateChatId('userLauraG', 'userCarlosL'),
+    senderId: 'userLauraG',
+    recipientId: 'userCarlosL',
+    voiceUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
+  },
+];
+
+// This list is primarily for the /messages page to show active chats.
+// It would typically be derived dynamically based on messages and user interactions.
+export const mockChatsList: Chat[] = [
+  {
+    id: generateChatId('userAnaP', 'userCarlosL'),
+    participantIds: ['userAnaP', 'userCarlosL'],
+    otherUserName: 'Carlos López', // From Ana's perspective
+    otherUserAvatar: mockUsers.find(u => u.id === 'userCarlosL')?.avatarUrl,
+    lastMessage: mockDirectMessages.filter(m => m.chatId === generateChatId('userAnaP', 'userCarlosL')).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0],
+    updatedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+    unreadCount: 1, // Example
+  },
+  {
+    id: generateChatId('userLauraG', 'userCarlosL'),
+    participantIds: ['userLauraG', 'userCarlosL'],
+    otherUserName: 'Carlos López', // From Laura's perspective
+    otherUserAvatar: mockUsers.find(u => u.id === 'userCarlosL')?.avatarUrl,
+    lastMessage: mockDirectMessages.filter(m => m.chatId === generateChatId('userLauraG', 'userCarlosL')).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0],
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
+    unreadCount: 0,
   },
 ];

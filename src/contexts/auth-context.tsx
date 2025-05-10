@@ -1,8 +1,8 @@
 // src/contexts/auth-context.tsx
 'use client';
 
-import type { User } from '@/types/friendly-voice';
-import { mockUsers } from '@/lib/mock-data'; // Import mock users
+import type { User, Message as DirectMessage } from '@/types/friendly-voice';
+import { mockUsers, mockDirectMessages as initialMockDirectMessages } from '@/lib/mock-data'; // Import mock users and messages
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -17,13 +17,16 @@ interface AuthContextType {
   unfollowUser: (targetUserId: string) => Promise<void>;
   isFollowing: (targetUserId: string) => boolean;
   getUserById: (userId: string) => User | undefined;
+  getMutualFollows: () => User[];
+  getDirectMessages: (chatPartnerId: string) => DirectMessage[];
+  sendDirectMessage: (recipientId: string, voiceDataUri: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper to manage users in localStorage for persistence across sessions for mock
+// Helper to manage users in localStorage for persistence
 const getStoredUsers = (): User[] => {
-  if (typeof window === 'undefined') return mockUsers; // Default if no window
+  if (typeof window === 'undefined') return mockUsers;
   const stored = localStorage.getItem('friendlyVoiceAllUsers');
   return stored ? JSON.parse(stored) : mockUsers;
 };
@@ -34,40 +37,58 @@ const storeUsers = (users: User[]) => {
   }
 };
 
+// Helper to manage direct messages in localStorage
+const getStoredDirectMessages = (): DirectMessage[] => {
+  if (typeof window === 'undefined') return initialMockDirectMessages;
+  const stored = localStorage.getItem('friendlyVoiceDirectMessages');
+  return stored ? JSON.parse(stored) : initialMockDirectMessages;
+};
+
+const storeDirectMessages = (messages: DirectMessage[]) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('friendlyVoiceDirectMessages', JSON.stringify(messages));
+  }
+};
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [allUsers, setAllUsers] = useState<User[]>(getStoredUsers()); // Manage all users for follow/unfollow
+  const [allUsers, setAllUsers] = useState<User[]>(getStoredUsers());
+  const [directMessages, setDirectMessages] = useState<DirectMessage[]>(getStoredDirectMessages());
   const router = useRouter();
 
   useEffect(() => {
-    setAllUsers(getStoredUsers()); // Load users on mount
+    setAllUsers(getStoredUsers());
+    setDirectMessages(getStoredDirectMessages());
     const storedUser = localStorage.getItem('friendlyVoiceUser');
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser) as User;
-      // Ensure the user from localStorage is also updated in allUsers state
       const userInAllUsers = allUsers.find(u => u.id === parsedUser.id);
       if (userInAllUsers) {
-        setUser({...userInAllUsers, ...parsedUser}); // Prioritize allUsers for follow/follower counts but localStorage for other data
+        setUser({...userInAllUsers, ...parsedUser});
       } else {
         setUser(parsedUser);
         setAllUsers(prev => prev.find(u => u.id === parsedUser.id) ? prev : [...prev, parsedUser]);
       }
     }
     setLoading(false);
-  }, []); // Empty dependency array - runs once on mount
+  }, []);
 
   useEffect(() => {
-    storeUsers(allUsers); // Persist allUsers whenever it changes
+    storeUsers(allUsers);
   }, [allUsers]);
+
+  useEffect(() => {
+    storeDirectMessages(directMessages);
+  }, [directMessages]);
 
   const login = async (email: string) => {
     setLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500));
     
     let foundUser = allUsers.find(u => u.email === email);
-    if (!foundUser) { // Simplified: create if not exists for demo purposes
+    if (!foundUser) { 
       foundUser = { 
         id: 'user' + Math.random().toString(36).substr(2, 9), 
         name: email.split('@')[0] || 'Usuario Nuevo', 
@@ -80,12 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setUser(foundUser);
     localStorage.setItem('friendlyVoiceUser', JSON.stringify(foundUser));
-    // Avatar might have been updated via onboarding, ensure localStorage reflects this
     const storedAvatar = localStorage.getItem(`friendlyVoiceAvatar-${foundUser.id}`);
     if (storedAvatar && foundUser.avatarUrl !== storedAvatar) {
-        updateUserAvatar(storedAvatar); // This will set user and local storage again
+        updateUserAvatar(storedAvatar);
     }
-
 
     if (foundUser.avatarUrl && (foundUser.avatarUrl.startsWith('https://picsum.photos/seed/') || !foundUser.bioSoundUrl)) {
        router.push('/onboarding');
@@ -101,9 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let existingUser = allUsers.find(u => u.email === email);
     if (existingUser) {
-      // For simplicity, log them in if they exist, or throw error
-      // throw new Error('User already exists with this email.');
-      login(email); // or handle as error
+      login(email);
       return;
     }
 
@@ -126,11 +143,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setUser(null);
     localStorage.removeItem('friendlyVoiceUser');
-    // Don't remove all users or individual avatars from localStorage on logout
-    // localStorage.removeItem('friendlyVoiceAllUsers'); 
-    // Object.keys(localStorage).forEach(key => {
-    //   if (key.startsWith('friendlyVoiceAvatar-')) localStorage.removeItem(key);
-    // });
     router.push('/login');
     setLoading(false);
   };
@@ -160,10 +172,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setAllUsers(prevAllUsers => {
         return prevAllUsers.map(u => {
-            if (u.id === user.id) { // Current user
+            if (u.id === user.id) {
                 return {...u, following: Array.from(new Set([...(u.following || []), targetUserId]))};
             }
-            if (u.id === targetUserId) { // Target user
+            if (u.id === targetUserId) {
                 return {...u, followers: Array.from(new Set([...(u.followers || []), user.id]))};
             }
             return u;
@@ -186,10 +198,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     setAllUsers(prevAllUsers => {
         return prevAllUsers.map(u => {
-            if (u.id === user.id) { // Current user
+            if (u.id === user.id) {
                 return {...u, following: (u.following || []).filter(id => id !== targetUserId)};
             }
-            if (u.id === targetUserId) { // Target user
+            if (u.id === targetUserId) {
                 return {...u, followers: (u.followers || []).filter(id => id !== user.id)};
             }
             return u;
@@ -205,9 +217,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return allUsers.find(u => u.id === userId);
   };
 
+  const getMutualFollows = (): User[] => {
+    if (!user) return [];
+    return allUsers.filter(otherUser => {
+      if (otherUser.id === user.id) return false;
+      const currentUserFollowsOther = user.following?.includes(otherUser.id);
+      const otherUserFollowsCurrent = otherUser.followers?.includes(user.id);
+      return currentUserFollowsOther && otherUserFollowsCurrent;
+    });
+  };
+
+  const getDirectMessages = (chatPartnerId: string): DirectMessage[] => {
+    if (!user) return [];
+    const chatId = [user.id, chatPartnerId].sort().join('_');
+    return directMessages
+      .filter(msg => msg.chatId === chatId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  };
+
+  const sendDirectMessage = async (recipientId: string, voiceDataUri: string): Promise<void> => {
+    if (!user) throw new Error("Usuario no autenticado.");
+
+    const newMessage: DirectMessage = {
+      id: `dm-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      chatId: [user.id, recipientId].sort().join('_'),
+      senderId: user.id,
+      recipientId: recipientId,
+      voiceUrl: voiceDataUri,
+      createdAt: new Date().toISOString(),
+      isRead: false, // Default for new message
+    };
+    
+    setDirectMessages(prevMessages => [...prevMessages, newMessage]);
+  };
+
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateUserAvatar, followUser, unfollowUser, isFollowing, getUserById }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      login, 
+      signup, 
+      logout, 
+      updateUserAvatar, 
+      followUser, 
+      unfollowUser, 
+      isFollowing, 
+      getUserById,
+      getMutualFollows,
+      getDirectMessages,
+      sendDirectMessage
+    }}>
       {children}
     </AuthContext.Provider>
   );

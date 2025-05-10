@@ -37,18 +37,22 @@ export interface Ecosystem {
 
 export interface Message {
   id: string;
-  chatId: string;
+  chatId: string; // Identificador de la conversación, ej: sortedUserIds.join('_')
   senderId: string;
-  voiceUrl: string;
-  createdAt: string;
+  recipientId: string; // ID del destinatario del mensaje
+  voiceUrl: string; // Data URI de la grabación de voz
+  createdAt: string; // ISO date string
   isRead?: boolean;
 }
 
 export interface Chat {
-  id: string;
-  participantIds: string[];
-  lastMessage?: Message;
-  updatedAt: string;
+  id: string; // Identificador único del chat, ej: sortedUserIds.join('_')
+  participantIds: string[]; // IDs de los usuarios en el chat
+  otherUserName: string; // Nombre del otro usuario para mostrar en la lista de chats
+  otherUserAvatar?: string; // Avatar del otro usuario
+  lastMessage?: Message; // El último mensaje de la conversación
+  updatedAt: string; // Fecha del último mensaje, para ordenar
+  unreadCount?: number; // Número de mensajes no leídos para el usuario actual
 }
 
 // For AI Avatar Generation
@@ -74,7 +78,7 @@ export interface VozComment {
 export interface Voz {
   id: string;
   userId: string;
-  userName: string;
+  userName:string;
   userAvatarUrl?: string;
   audioUrl: string;
   caption?: string;
@@ -84,5 +88,3 @@ export interface Voz {
   isLiked?: boolean; // Client-side state for mocking like interaction
   comments?: VozComment[]; // Added to store comments for a Voz
 }
-
-
