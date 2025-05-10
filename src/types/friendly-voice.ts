@@ -88,3 +88,21 @@ export interface Voz {
   isLiked?: boolean; // Client-side state for mocking like interaction
   comments?: VozComment[]; // Added to store comments for a Voz
 }
+
+// For Notifications
+export interface Notification {
+  id: string;
+  type: 'new_follower' | 'like' | 'comment' | 'ecosystem_invite' | 'generic';
+  userId: string; // User who triggered the notification OR target user for generic notification
+  userName: string; // Name of the user who triggered (e.g. "Carlos López te siguió") or context name
+  userAvatarUrl?: string;
+  vozId?: string; // If related to a Voz
+  vozCaptionPreview?: string; // Preview of the Voz caption
+  commentTextPreview?: string; // Preview of the comment text
+  ecosystemId?: string; // If related to an ecosystem
+  ecosystemName?: string; // Name of the ecosystem
+  genericMessage?: string; // For generic notifications
+  createdAt: string; // ISO date string
+  isRead: boolean;
+  link?: string; // Optional link to navigate to
+}
