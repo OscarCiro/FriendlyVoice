@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
-import { Loader2, Edit3, LogOut, Mic, Settings, Users, Shield } from 'lucide-react';
+import { Loader2, Edit3, LogOut, Mic, Settings, Users, Shield, LayoutGrid, Headphones } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
@@ -22,16 +22,7 @@ export default function ProfilePage() {
     }
   }, [user, loading, router]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    // User will be redirected by useEffect, return null or a loading state
+  if (loading || !user) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-10rem)]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -46,6 +37,12 @@ export default function ProfilePage() {
   ];
   const followersCount = user.followers?.length || 25;
   const followingCount = user.following?.length || 42;
+
+  const mockJoinedEcosystems = [
+    { id: 'eco1', name: 'Charlas de Tech Semanal', topic: 'Lo último en tecnología y desarrollo', participantCount: 120 },
+    { id: 'eco2', name: 'Club de Lectura "Entre Líneas"', topic: 'Discusiones mensuales de libros', participantCount: 75 },
+    { id: 'eco3', name: 'Mañanas Conscientes', topic: 'Meditación y mindfulness', participantCount: 50 },
+  ];
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
@@ -86,7 +83,7 @@ export default function ProfilePage() {
           <div>
             <h3 className="text-lg font-semibold mb-2 text-primary flex items-center"><Settings className="mr-2 h-5 w-5" />Intereses y Personalidad</h3>
             <div className="flex flex-wrap gap-2">
-              {user.interests?.map(interest => (
+              {(user.interests?.length ? user.interests : ['Música', 'Tecnología']).map(interest => (
                 <Badge key={interest} variant="secondary" className="text-sm">{interest}</Badge>
               ))}
               {(user.personalityTags?.length ? user.personalityTags : ['Creativo', 'Introvertido']).map(tag => (
@@ -103,21 +100,46 @@ export default function ProfilePage() {
           )}
 
           <div>
-            <h3 className="text-lg font-semibold mb-2 text-primary flex items-center"><Mic className="mr-2 h-5 w-5" />Fragmentos de Voz</h3>
+            <h3 className="text-lg font-semibold mb-3 text-primary flex items-center"><Mic className="mr-2 h-5 w-5" />Mis Voces Publicadas</h3>
             {mockVoiceSamples.length > 0 ? (
               <ul className="space-y-3">
                 {mockVoiceSamples.map(sample => (
-                  <li key={sample.id} className="p-3 bg-muted rounded-md flex justify-between items-center">
+                  <li key={sample.id} className="p-3 bg-muted rounded-md flex justify-between items-center hover:bg-muted/80 transition-colors">
                     <span>{sample.title}</span>
                     <Button variant="ghost" size="sm">Reproducir</Button>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">Aún no hay fragmentos de voz.</p>
+              <p className="text-sm text-muted-foreground">Aún no has publicado ninguna voz.</p>
             )}
           </div>
           
+          <Separator />
+
+           <div>
+            <h3 className="text-lg font-semibold mb-3 text-primary flex items-center"><LayoutGrid className="mr-2 h-5 w-5" />Mis Ecosistemas</h3>
+            {mockJoinedEcosystems.length > 0 ? (
+              <div className="space-y-3">
+                {mockJoinedEcosystems.map(eco => (
+                  <Link key={eco.id} href={`/ecosystems/${eco.id}`} passHref>
+                    <div className="p-3 bg-muted rounded-md hover:bg-muted/80 transition-colors cursor-pointer">
+                      <div className="flex items-center justify-between">
+                        <div>
+                           <p className="font-medium">{eco.name}</p>
+                           <p className="text-xs text-muted-foreground flex items-center"><Headphones className="mr-1.5 h-3 w-3"/> {eco.topic}</p>
+                        </div>
+                        <Badge variant="outline">{eco.participantCount} part.</Badge>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Aún no te has unido a ningún ecosistema.</p>
+            )}
+          </div>
+
           <Separator />
 
           <div className="space-y-2">

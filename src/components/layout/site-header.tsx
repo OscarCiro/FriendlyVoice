@@ -1,3 +1,4 @@
+// src/components/layout/site-header.tsx
 import Link from 'next/link';
 import { UserCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,14 +10,25 @@ export function SiteHeader() {
         <Link href="/" className="text-2xl font-bold text-primary">
           FriendlyVoice
         </Link>
-        <nav className="flex items-center space-x-4">
-          <Link href="/profile" passHref>
-            <Button variant="ghost" size="icon">
-              <UserCircle2 className="h-6 w-6" />
-              <span className="sr-only">Perfil</span>
-            </Button>
+        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+          <Link href="/discover" className="text-muted-foreground hover:text-primary transition-colors">
+            Ecosistemas
+          </Link>
+          <Link href="/feed" className="text-muted-foreground hover:text-primary transition-colors">
+            Feed
+          </Link>
+          <Link href="/notifications" className="text-muted-foreground hover:text-primary transition-colors">
+            Notificaciones
           </Link>
         </nav>
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/profile">
+              <UserCircle2 className="h-6 w-6" />
+              <span className="sr-only">Perfil</span>
+            </Link>
+          </Button>
+        </div>
       </div>
     </header>
   );
