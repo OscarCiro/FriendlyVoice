@@ -17,6 +17,9 @@ export function SiteHeader() {
           <Link href="/feed" className="text-muted-foreground hover:text-primary transition-colors">
             Feed
           </Link>
+          <Link href="/messages" className="text-muted-foreground hover:text-primary transition-colors">
+            Mensajes
+          </Link>
           <Link href="/notifications" className="text-muted-foreground hover:text-primary transition-colors">
             Notificaciones
           </Link>
