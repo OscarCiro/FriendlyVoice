@@ -19,7 +19,7 @@ export interface VoiceSample {
 }
 
 export interface Ecosystem {
-  id: string;
+  id:string;
   name: string;
   topic: string;
   description?: string;
@@ -57,4 +57,28 @@ export interface GenerateVoiceAvatarInput {
 
 export interface GenerateVoiceAvatarOutput {
   avatarDataUri: string;
+}
+
+// For Feed/Voces feature
+export interface Voz {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatarUrl?: string;
+  audioUrl: string;
+  caption?: string;
+  likesCount: number;
+  commentsCount: number;
+  createdAt: string; // ISO date string
+  isLiked?: boolean; // Client-side state for mocking like interaction
+}
+
+export interface VozComment {
+  id: string;
+  vozId: string;
+  userId: string;
+  userName: string;
+  userAvatarUrl?: string;
+  text: string;
+  createdAt: string;
 }
