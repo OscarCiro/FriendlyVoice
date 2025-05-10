@@ -5,22 +5,48 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
-import { Loader2, Edit3, LogOut, Mic, Settings, Users, Shield, LayoutGrid, Headphones } from 'lucide-react';
+import { Loader2, Edit3, LogOut, Mic, Settings, Users, Shield, LayoutGrid, Headphones, UserCheck, UserX } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import type { Voz } from '@/types/friendly-voice';
+import { initialMockVoces } from '@/lib/mock-data';
+import { VozCard } from '@/components/voz-card';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, getUserById } = useAuth(); // Added getUserById
   const router = useRouter();
+  const { toast } = useToast();
+  const [userVoces, setUserVoces] = useState<Voz[]>([]);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
     }
+    if (user) {
+      // Load current user's voces
+      const voces = initialMockVoces.filter(v => v.userId === user.id)
+                                   .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setUserVoces(voces);
+    }
   }, [user, loading, router]);
+
+  // Dummy handlers for VozCard interactions on this page
+  const handleLikeOnProfile = (vozId: string) => {
+    setUserVoces(prevVoces =>
+      prevVoces.map(v =>
+        v.id === vozId
+          ? { ...v, isLiked: !v.isLiked, likesCount: v.isLiked ? v.likesCount - 1 : v.likesCount + 1 }
+          : v
+      )
+    );
+  };
+  const handleCommentOnProfile = (vozId: string) => {
+     toast({ title: 'Comentarios', description: 'La función de comentarios está en desarrollo.'});
+  };
 
   if (loading || !user) {
     return (
@@ -29,19 +55,15 @@ export default function ProfilePage() {
       </div>
     );
   }
-
-  // Mock data for demonstration
-  const mockVoiceSamples = [
-    { id: 'vs1', title: 'Mi Introducción', url: '#', createdAt: new Date().toISOString() },
-    { id: 'vs2', title: 'Reflexiones sobre Tecnología', url: '#', createdAt: new Date().toISOString() },
-  ];
-  const followersCount = user.followers?.length || 25;
-  const followingCount = user.following?.length || 42;
+  
+  // Get up-to-date follower/following counts
+  const profileUser = getUserById(user.id) || user; // Fallback to context user if somehow not in allUsers
+  const followersCount = profileUser.followers?.length || 0;
+  const followingCount = profileUser.following?.length || 0;
 
   const mockJoinedEcosystems = [
     { id: 'eco1', name: 'Charlas de Tech Semanal', topic: 'Lo último en tecnología y desarrollo', participantCount: 120 },
     { id: 'eco2', name: 'Club de Lectura "Entre Líneas"', topic: 'Discusiones mensuales de libros', participantCount: 75 },
-    { id: 'eco3', name: 'Mañanas Conscientes', topic: 'Meditación y mindfulness', participantCount: 50 },
   ];
 
   return (
@@ -49,11 +71,11 @@ export default function ProfilePage() {
       <Card className="shadow-xl overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-primary to-blue-500 p-8 text-primary-foreground">
           <div className="flex flex-col items-center text-center space-y-3">
-            {user.avatarUrl && (
+            {profileUser.avatarUrl && (
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-background shadow-lg">
                 <Image 
-                  src={user.avatarUrl} 
-                  alt={user.name || 'Avatar de Usuario'} 
+                  src={profileUser.avatarUrl} 
+                  alt={profileUser.name || 'Avatar de Usuario'} 
                   width={128} 
                   height={128} 
                   className="object-cover"
@@ -62,19 +84,20 @@ export default function ProfilePage() {
                 />
               </div>
             )}
-            <CardTitle className="text-3xl font-bold">{user.name}</CardTitle>
-            <CardDescription className="text-blue-100">{user.email}</CardDescription>
+            <CardTitle className="text-3xl font-bold">{profileUser.name}</CardTitle>
+            <CardDescription className="text-blue-100">{profileUser.email}</CardDescription>
+            {profileUser.bio && <p className="text-sm text-blue-50 mt-1">{profileUser.bio}</p>}
           </div>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
           <div className="flex justify-around text-center">
             <div>
               <p className="text-2xl font-semibold">{followersCount}</p>
-              <p className="text-sm text-muted-foreground">Voces Amigas (Seguidores)</p>
+              <p className="text-sm text-muted-foreground">Seguidores</p>
             </div>
             <div>
               <p className="text-2xl font-semibold">{followingCount}</p>
-              <p className="text-sm text-muted-foreground">Siguiendo Voces</p>
+              <p className="text-sm text-muted-foreground">Siguiendo</p>
             </div>
           </div>
           
@@ -83,35 +106,32 @@ export default function ProfilePage() {
           <div>
             <h3 className="text-lg font-semibold mb-2 text-primary flex items-center"><Settings className="mr-2 h-5 w-5" />Intereses y Personalidad</h3>
             <div className="flex flex-wrap gap-2">
-              {(user.interests?.length ? user.interests : ['Música', 'Tecnología']).map(interest => (
+              {(profileUser.interests?.length ? profileUser.interests : ['Música', 'Tecnología']).map(interest => (
                 <Badge key={interest} variant="secondary" className="text-sm">{interest}</Badge>
               ))}
-              {(user.personalityTags?.length ? user.personalityTags : ['Creativo', 'Introvertido']).map(tag => (
+              {(profileUser.personalityTags?.length ? profileUser.personalityTags : ['Creativo', 'Introvertido']).map(tag => (
                 <Badge key={tag} variant="outline" className="text-sm">{tag}</Badge>
               ))}
             </div>
           </div>
 
-          {user.bioSoundUrl && (
+          {profileUser.bioSoundUrl && (
             <div>
               <h3 className="text-lg font-semibold mb-2 text-primary flex items-center"><Mic className="mr-2 h-5 w-5" />Biografía Sonora</h3>
-              <audio controls src={user.bioSoundUrl} className="w-full" />
+              <audio controls src={profileUser.bioSoundUrl} className="w-full" />
             </div>
           )}
 
           <div>
             <h3 className="text-lg font-semibold mb-3 text-primary flex items-center"><Mic className="mr-2 h-5 w-5" />Mis Voces Publicadas</h3>
-            {mockVoiceSamples.length > 0 ? (
-              <ul className="space-y-3">
-                {mockVoiceSamples.map(sample => (
-                  <li key={sample.id} className="p-3 bg-muted rounded-md flex justify-between items-center hover:bg-muted/80 transition-colors">
-                    <span>{sample.title}</span>
-                    <Button variant="ghost" size="sm">Reproducir</Button>
-                  </li>
+            {userVoces.length > 0 ? (
+              <div className="space-y-4">
+                {userVoces.map(voz => (
+                  <VozCard key={voz.id} voz={voz} onLikeToggle={handleLikeOnProfile} onOpenComments={handleCommentOnProfile} />
                 ))}
-              </ul>
+              </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Aún no has publicado ninguna voz.</p>
+              <p className="text-sm text-muted-foreground text-center py-4">Aún no has publicado ninguna voz.</p>
             )}
           </div>
           
@@ -143,17 +163,17 @@ export default function ProfilePage() {
           <Separator />
 
           <div className="space-y-2">
-             <Button variant="outline" className="w-full justify-start">
+             <Button variant="outline" className="w-full justify-start" onClick={() => toast({title: 'Próximamente', description: 'La gestión de amigos de voz estará disponible pronto.'})}>
               <Users className="mr-2 h-4 w-4" /> Gestionar Voces Amigas
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button variant="outline" className="w-full justify-start" onClick={() => toast({title: 'Próximamente', description: 'La configuración de privacidad estará disponible pronto.'})}>
               <Shield className="mr-2 h-4 w-4" /> Privacidad y Seguridad
             </Button>
           </div>
 
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row justify-between gap-2 p-6 border-t">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => toast({title: 'Próximamente', description: 'La edición de perfil estará disponible pronto.'})}>
             <Edit3 className="mr-2 h-4 w-4" /> Editar Perfil
           </Button>
           <Button variant="destructive" onClick={logout}>

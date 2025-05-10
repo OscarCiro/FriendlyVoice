@@ -5,6 +5,7 @@ export interface User {
   avatarUrl?: string; // Generated or uploaded abstract avatar
   interests: string[];
   personalityTags?: string[];
+  bio?: string; // Added bio field
   bioSoundUrl?: string; // URL to a short audio biography
   voiceSamples: VoiceSample[];
   followers?: string[]; // User IDs
@@ -60,6 +61,16 @@ export interface GenerateVoiceAvatarOutput {
 }
 
 // For Feed/Voces feature
+export interface VozComment {
+  id: string;
+  vozId: string;
+  userId: string;
+  userName: string;
+  userAvatarUrl?: string;
+  text: string;
+  createdAt: string; // ISO date string
+}
+
 export interface Voz {
   id: string;
   userId: string;
@@ -71,14 +82,7 @@ export interface Voz {
   commentsCount: number;
   createdAt: string; // ISO date string
   isLiked?: boolean; // Client-side state for mocking like interaction
+  comments?: VozComment[]; // Added to store comments for a Voz
 }
 
-export interface VozComment {
-  id: string;
-  vozId: string;
-  userId: string;
-  userName: string;
-  userAvatarUrl?: string;
-  text: string;
-  createdAt: string;
-}
+

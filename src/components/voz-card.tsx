@@ -4,6 +4,7 @@
 import type { Voz } from '@/types/friendly-voice';
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -16,10 +17,10 @@ import { useToast } from '@/hooks/use-toast';
 interface VozCardProps {
   voz: Voz;
   onLikeToggle: (vozId: string) => void;
-  onComment: (vozId: string) => void; // Placeholder for comment functionality
+  onOpenComments: (vozId: string) => void; 
 }
 
-export function VozCard({ voz, onLikeToggle, onComment }: VozCardProps) {
+export function VozCard({ voz, onLikeToggle, onOpenComments }: VozCardProps) {
   const { toast } = useToast();
   const [showFullCaption, setShowFullCaption] = useState(false);
 
@@ -39,12 +40,16 @@ export function VozCard({ voz, onLikeToggle, onComment }: VozCardProps) {
   return (
     <Card className="w-full shadow-md">
       <CardHeader className="flex flex-row items-center space-x-3 pb-3">
-        <Avatar>
-          <AvatarImage src={voz.userAvatarUrl} alt={voz.userName} data-ai-hint="abstract person" />
-          <AvatarFallback>{voz.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
-        </Avatar>
+        <Link href={`/profile/${voz.userId}`} passHref>
+          <Avatar className="cursor-pointer">
+            <AvatarImage src={voz.userAvatarUrl} alt={voz.userName} data-ai-hint="abstract person" />
+            <AvatarFallback>{voz.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
+          </Avatar>
+        </Link>
         <div className="flex-grow">
-          <p className="font-semibold text-sm">{voz.userName}</p>
+          <Link href={`/profile/${voz.userId}`} passHref>
+            <p className="font-semibold text-sm hover:underline cursor-pointer">{voz.userName}</p>
+          </Link>
           <p className="text-xs text-muted-foreground">{formattedDate}</p>
         </div>
         <Button variant="ghost" size="icon" className="text-muted-foreground">
@@ -80,10 +85,7 @@ export function VozCard({ voz, onLikeToggle, onComment }: VozCardProps) {
           variant="ghost" 
           size="sm" 
           className="text-muted-foreground hover:text-primary" 
-          onClick={() => {
-            onComment(voz.id);
-            toast({ title: "Comentarios", description: "La sección de comentarios está en desarrollo."});
-          }}
+          onClick={() => onOpenComments(voz.id)}
         >
           <MessageCircle className="mr-2 h-5 w-5" /> {voz.commentsCount} Comentarios
         </Button>
