@@ -50,7 +50,7 @@ export function useAudioRecorder(): AudioRecorderControls {
       
       mediaRecorderRef.current.onerror = (event) => {
         console.error('MediaRecorder error:', event);
-        setError('Error during recording.');
+        setError('Error durante la grabación.');
         setStatus('error');
         stream.getTracks().forEach(track => track.stop());
       };
@@ -58,7 +58,7 @@ export function useAudioRecorder(): AudioRecorderControls {
       mediaRecorderRef.current.start();
     } catch (err) {
       console.error('Error accessing microphone:', err);
-      setError(err instanceof Error ? err.message : 'Could not access microphone. Please check permissions.');
+      setError(err instanceof Error ? err.message : 'No se pudo acceder al micrófono. Por favor, revisa los permisos.');
       setStatus('error');
     }
   }, [status]);

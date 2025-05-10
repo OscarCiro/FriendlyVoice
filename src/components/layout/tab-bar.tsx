@@ -6,10 +6,10 @@ import { Home, Compass, MessageSquare, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/discover', label: 'Discover', icon: Compass },
-  { href: '/messages', label: 'Messages', icon: MessageSquare },
-  { href: '/profile', label: 'Profile', icon: User },
+  { href: '/', label: 'Inicio', icon: Home },
+  { href: '/discover', label: 'Descubrir', icon: Compass },
+  { href: '/messages', label: 'Mensajes', icon: MessageSquare },
+  { href: '/profile', label: 'Perfil', icon: User },
 ];
 
 export function TabBar() {

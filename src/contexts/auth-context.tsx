@@ -37,10 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     const mockUser: User = { 
       id: 'user123', 
-      name: email.split('@')[0] || 'Demo User', 
+      name: email.split('@')[0] || 'Usuario Demo', 
       email, 
       avatarUrl: localStorage.getItem('friendlyVoiceAvatar') || `https://picsum.photos/seed/${email}/200`,
-      interests: ['Music', 'Tech', 'Podcasts'],
+      interests: ['Música', 'Tecnología', 'Podcasts'],
       bioSoundUrl: '',
       voiceSamples: [],
     };

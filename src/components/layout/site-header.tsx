@@ -13,7 +13,7 @@ export function SiteHeader() {
           <Link href="/profile" passHref>
             <Button variant="ghost" size="icon">
               <UserCircle2 className="h-6 w-6" />
-              <span className="sr-only">Profile</span>
+              <span className="sr-only">Perfil</span>
             </Button>
           </Link>
         </nav>

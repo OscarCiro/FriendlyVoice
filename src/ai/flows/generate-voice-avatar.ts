@@ -30,9 +30,9 @@ const generateVoiceAvatarPrompt = ai.definePrompt({
   name: 'generateVoiceAvatarPrompt',
   input: {schema: GenerateVoiceAvatarInputSchema},
   output: {schema: GenerateVoiceAvatarOutputSchema},
-  prompt: `You are an AI avatar generator. You will receive a voice sample from the user, and based on this voice sample, you will generate a unique avatar to represent them. The avatar should be abstract and visually appealing.  The output should be a data URI representing the image. Use teal (#008080) and blue colors in the avatar.
+  prompt: `Eres un generador de avatares IA. Recibirás una muestra de voz del usuario y, basándote en esta muestra de voz, generarás un avatar único para representarlo. El avatar debe ser abstracto y visualmente atractivo. La salida debe ser un URI de datos que represente la imagen. Usa colores verde azulado (#008080) y azul en el avatar.
 
-Voice Sample: {{media url=voiceDataUri}}`,
+Muestra de Voz: {{media url=voiceDataUri}}`,
   config: {
     safetySettings: [
       {
@@ -60,7 +60,7 @@ const generateVoiceAvatarFlow = ai.defineFlow(
         {media: {url: input.voiceDataUri}},
         {
           text:
-            'Generate a unique, abstract and visually appealing avatar representing this voice. Use teal (#008080) and blue colors in the avatar.',
+            'Genera un avatar único, abstracto y visualmente atractivo que represente esta voz. Usa colores verde azulado (#008080) y azul en el avatar.',
         },
       ],
       config: {

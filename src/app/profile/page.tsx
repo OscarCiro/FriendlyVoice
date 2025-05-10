@@ -41,8 +41,8 @@ export default function ProfilePage() {
 
   // Mock data for demonstration
   const mockVoiceSamples = [
-    { id: 'vs1', title: 'My Introduction', url: '#', createdAt: new Date().toISOString() },
-    { id: 'vs2', title: 'Thoughts on Tech', url: '#', createdAt: new Date().toISOString() },
+    { id: 'vs1', title: 'Mi Introducción', url: '#', createdAt: new Date().toISOString() },
+    { id: 'vs2', title: 'Reflexiones sobre Tecnología', url: '#', createdAt: new Date().toISOString() },
   ];
   const followersCount = user.followers?.length || 25;
   const followingCount = user.following?.length || 42;
@@ -56,7 +56,7 @@ export default function ProfilePage() {
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-background shadow-lg">
                 <Image 
                   src={user.avatarUrl} 
-                  alt={user.name || 'User Avatar'} 
+                  alt={user.name || 'Avatar de Usuario'} 
                   width={128} 
                   height={128} 
                   className="object-cover"
@@ -73,7 +73,7 @@ export default function ProfilePage() {
           <div className="flex justify-around text-center">
             <div>
               <p className="text-2xl font-semibold">{followersCount}</p>
-              <p className="text-sm text-muted-foreground">Voces Amigas (Followers)</p>
+              <p className="text-sm text-muted-foreground">Voces Amigas (Seguidores)</p>
             </div>
             <div>
               <p className="text-2xl font-semibold">{followingCount}</p>
@@ -84,12 +84,12 @@ export default function ProfilePage() {
           <Separator />
 
           <div>
-            <h3 className="text-lg font-semibold mb-2 text-primary flex items-center"><Settings className="mr-2 h-5 w-5" />Interests & Personality</h3>
+            <h3 className="text-lg font-semibold mb-2 text-primary flex items-center"><Settings className="mr-2 h-5 w-5" />Intereses y Personalidad</h3>
             <div className="flex flex-wrap gap-2">
               {user.interests?.map(interest => (
                 <Badge key={interest} variant="secondary" className="text-sm">{interest}</Badge>
               ))}
-              {(user.personalityTags || ['Creative', 'Introvert']).map(tag => (
+              {(user.personalityTags?.length ? user.personalityTags : ['Creativo', 'Introvertido']).map(tag => (
                 <Badge key={tag} variant="outline" className="text-sm">{tag}</Badge>
               ))}
             </div>
@@ -114,7 +114,7 @@ export default function ProfilePage() {
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No voice samples yet.</p>
+              <p className="text-sm text-muted-foreground">Aún no hay fragmentos de voz.</p>
             )}
           </div>
           

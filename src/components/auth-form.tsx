@@ -20,12 +20,12 @@ import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 
 const formSchemaBase = z.object({
-  email: z.string().email({ message: 'Invalid email address.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  email: z.string().email({ message: 'Dirección de correo electrónico inválida.' }),
+  password: z.string().min(6, { message: 'La contraseña debe tener al menos 6 caracteres.' }),
 });
 
 const signupSchema = formSchemaBase.extend({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  name: z.string().min(2, { message: 'El nombre debe tener al menos 2 caracteres.' }),
 });
 
 type AuthFormProps = {
@@ -53,16 +53,16 @@ export function AuthForm({ type }: AuthFormProps) {
     try {
       if (type === 'login') {
         await login(values.email);
-        toast({ title: 'Login Successful', description: 'Welcome back!' });
+        toast({ title: 'Inicio de Sesión Exitoso', description: '¡Bienvenido de nuevo!' });
       } else if (type === 'signup') {
         const signupValues = values as z.infer<typeof signupSchema>;
         await signup(signupValues.email, signupValues.name);
-        toast({ title: 'Signup Successful', description: 'Welcome to FriendlyVoice!' });
+        toast({ title: 'Registro Exitoso', description: '¡Bienvenido a FriendlyVoice!' });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred.';
+      const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
       toast({
-        title: type === 'login' ? 'Login Failed' : 'Signup Failed',
+        title: type === 'login' ? 'Error al Iniciar Sesión' : 'Error en el Registro',
         description: errorMessage,
         variant: 'destructive',
       });
@@ -74,7 +74,7 @@ export function AuthForm({ type }: AuthFormProps) {
   return (
     <div className="max-w-md mx-auto">
       <h2 className="text-3xl font-bold text-center mb-8 text-primary">
-        {type === 'login' ? 'Welcome Back' : 'Join FriendlyVoice'}
+        {type === 'login' ? 'Bienvenido de Nuevo' : 'Únete a FriendlyVoice'}
       </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -84,9 +84,9 @@ export function AuthForm({ type }: AuthFormProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Nombre</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your Name" {...field} />
+                    <Input placeholder="Tu Nombre" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -98,9 +98,9 @@ export function AuthForm({ type }: AuthFormProps) {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>Correo Electrónico</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="you@example.com" {...field} />
+                  <Input type="email" placeholder="tu@ejemplo.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -111,7 +111,7 @@ export function AuthForm({ type }: AuthFormProps) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Contraseña</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="••••••••" {...field} />
                 </FormControl>
@@ -121,14 +121,14 @@ export function AuthForm({ type }: AuthFormProps) {
           />
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {type === 'login' ? 'Log In' : 'Sign Up'}
+            {type === 'login' ? 'Iniciar Sesión' : 'Registrarse'}
           </Button>
         </form>
       </Form>
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        {type === 'login' ? "Don't have an account? " : 'Already have an account? '}
+        {type === 'login' ? "¿No tienes una cuenta? " : '¿Ya tienes una cuenta? '}
         <Link href={type === 'login' ? '/signup' : '/login'} className="font-medium text-primary hover:underline">
-          {type === 'login' ? 'Sign Up' : 'Log In'}
+          {type === 'login' ? 'Registrarse' : 'Iniciar Sesión'}
         </Link>
       </p>
     </div>
